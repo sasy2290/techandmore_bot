@@ -1,0 +1,23 @@
+[
+  {
+    "title": "SSD NVMe Crucial P3 Plus 1TB",
+    "price": "59,99€",
+    "discount": 30,
+    "image": "https://m.media-amazon.com/images/I/61j7xvHgTBL._AC_SL1500_.jpg",
+    "url": "https://www.amazon.it/dp/B0B25PZC6M"
+  },
+  {
+    "title": "Fire TV Stick 4K Max (2ª gen)",
+    "price": "44,99€",
+    "discount": 40,
+    "image": "https://m.media-amazon.com/images/I/51E5g6Vt1jL._AC_SL1000_.jpg",
+    "url": "https://www.amazon.it/dp/B0BHTYF88L"
+  },
+  {
+    "title": "Router WiFi 6 TP-Link Archer AX23",
+    "price": "59,90€",
+    "discount": 33,
+    "image": "https://m.media-amazon.com/images/I/61JeA2a-8LL._AC_SL1500_.jpg",
+    "url": "https://www.amazon.it/dp/B08XBV6KPX"
+  }
+]
