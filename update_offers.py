@@ -50,23 +50,27 @@ def generate_offers_from_rss():
     return offers
 
 
-# ===== FUNZIONE: INVIA A TELEGRAM =====
+# ===== FUNZIONE: INVIA FOTO + TESTO SU TELEGRAM =====
 def send_to_telegram(offer):
     try:
-        text = f"🔥 <b>{offer['title']}</b>\n💸 <i>{offer['price']}</i>\n👉 <a href='{offer['url']}'>Acquista su Amazon</a>"
-        payload = {
+        caption = f"🔥 <b>{offer['title']}</b>\n"
+        if offer["price"]:
+            caption += f"💸 <i>{offer['price']}</i>\n"
+        caption += f"👉 <a href='{offer['url']}'>Acquista su Amazon</a>"
+
+        data = {
             "chat_id": TELEGRAM_CHANNEL,
-            "text": text,
-            "parse_mode": "HTML",
-            "disable_web_page_preview": False
+            "photo": offer["image"] or "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
+            "caption": caption,
+            "parse_mode": "HTML"
         }
-        response = requests.post(
-            f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", data=payload
-        )
+
+        response = requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendPhoto", data=data)
         if response.status_code == 200:
             print(f"✅ Inviata su Telegram: {offer['title']}")
         else:
             print(f"⚠️ Errore Telegram ({response.status_code}): {response.text}")
+
     except Exception as e:
         print(f"❌ Errore invio Telegram: {e}")
 
@@ -95,7 +99,7 @@ def update_github_file(content):
         print("🆕 File offers.json creato su GitHub!")
 
 
-# ===== FUNZIONE: SALVA / CARICA OFFERTE GIÀ INVIATE =====
+# ===== FUNZIONI DUPLICATI =====
 def load_sent():
     if os.path.exists(SENT_FILE):
         with open(SENT_FILE, "r", encoding="utf-8") as f:
