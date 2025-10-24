@@ -4,6 +4,7 @@ import json
 import feedparser
 import requests
 from github import Github
+import traceback
 
 # ===== CONFIGURAZIONE =====
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
@@ -20,34 +21,38 @@ SENT_FILE = "sent_offers.json"  # file locale per evitare duplicati
 # ===== FUNZIONE: LEGGE RSS =====
 def generate_offers_from_rss():
     print("🔄 Leggo feed RSS...")
-    feed = feedparser.parse(RSS_FEED)
-    offers = []
+    try:
+        feed = feedparser.parse(RSS_FEED)
+        offers = []
 
-    for entry in feed.entries:
-        title = entry.title
-        link = entry.link
-        image = ""
-        price = ""
-        discount = ""
+        for entry in feed.entries:
+            title = entry.title
+            link = entry.link
+            image = ""
+            price = ""
+            discount = ""
 
-        # immagine
-        if "media_content" in entry and len(entry.media_content) > 0:
-            image = entry.media_content[0].get("url", "")
+            # immagine
+            if "media_content" in entry and len(entry.media_content) > 0:
+                image = entry.media_content[0].get("url", "")
 
-        # aggiungi tag affiliato
-        if "tag=" not in link:
-            link += ("&" if "?" in link else "?") + f"tag={AFFILIATE_TAG}"
+            # aggiungi tag affiliato
+            if "tag=" not in link:
+                link += ("&" if "?" in link else "?") + f"tag={AFFILIATE_TAG}"
 
-        offer = {
-            "title": title.strip(),
-            "price": price,
-            "discount": discount,
-            "image": image,
-            "url": link
-        }
-        offers.append(offer)
+            offer = {
+                "title": title.strip(),
+                "price": price,
+                "discount": discount,
+                "image": image,
+                "url": link
+            }
+            offers.append(offer)
+        return offers
 
-    return offers
+    except Exception as e:
+        print("❌ Errore nel caricamento del feed RSS:", e)
+        return []
 
 
 # ===== FUNZIONE: INVIA FOTO + TESTO SU TELEGRAM =====
@@ -77,38 +82,47 @@ def send_to_telegram(offer):
 
 # ===== FUNZIONE: AGGIORNA GITHUB =====
 def update_github_file(content):
-    print("📤 Aggiorno offers.json su GitHub...")
-    g = Github(GITHUB_TOKEN)
-    repo = g.get_user(REPO_OWNER).get_repo(REPO_NAME)
-
     try:
-        file = repo.get_contents("offers.json")
-        repo.update_file(
-            path=file.path,
-            message="🤖 Aggiornamento automatico offerte TechAndMore",
-            content=json.dumps(content, indent=2, ensure_ascii=False),
-            sha=file.sha
-        )
-        print("✅ File aggiornato su GitHub!")
-    except Exception:
-        repo.create_file(
-            path="offers.json",
-            message="🆕 Creazione iniziale file offerte",
-            content=json.dumps(content, indent=2, ensure_ascii=False)
-        )
-        print("🆕 File offers.json creato su GitHub!")
+        print("📤 Aggiorno offers.json su GitHub...")
+        g = Github(GITHUB_TOKEN)
+        repo = g.get_user(REPO_OWNER).get_repo(REPO_NAME)
+
+        try:
+            file = repo.get_contents("offers.json")
+            repo.update_file(
+                path=file.path,
+                message="🤖 Aggiornamento automatico offerte TechAndMore",
+                content=json.dumps(content, indent=2, ensure_ascii=False),
+                sha=file.sha
+            )
+            print("✅ File aggiornato su GitHub!")
+        except Exception:
+            repo.create_file(
+                path="offers.json",
+                message="🆕 Creazione iniziale file offerte",
+                content=json.dumps(content, indent=2, ensure_ascii=False)
+            )
+            print("🆕 File offers.json creato su GitHub!")
+    except Exception as e:
+        print(f"⚠️ Errore aggiornamento GitHub: {e}")
 
 
 # ===== FUNZIONI DUPLICATI =====
 def load_sent():
-    if os.path.exists(SENT_FILE):
-        with open(SENT_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+    try:
+        if os.path.exists(SENT_FILE):
+            with open(SENT_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except:
+        pass
     return []
 
 def save_sent(sent):
-    with open(SENT_FILE, "w", encoding="utf-8") as f:
-        json.dump(sent, f, indent=2, ensure_ascii=False)
+    try:
+        with open(SENT_FILE, "w", encoding="utf-8") as f:
+            json.dump(sent, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        print(f"⚠️ Errore salvataggio duplicati: {e}")
 
 
 # ===== CICLO PRINCIPALE =====
@@ -134,11 +148,19 @@ def main():
                 print("ℹ️ Nessuna nuova offerta trovata.")
 
         except Exception as e:
-            print(f"❌ Errore generale: {e}")
+            print("❌ Errore generale nel ciclo principale:", e)
+            traceback.print_exc()
 
         print("⏳ Attendo 15 minuti prima del prossimo aggiornamento...\n")
         time.sleep(15 * 60)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("🛑 Arrestato manualmente.")
+    except Exception as e:
+        print("⚠️ Riavvio automatico dopo errore critico:", e)
+        time.sleep(10)
+        os.execv(__file__, ["python"] + os.sys.argv)
