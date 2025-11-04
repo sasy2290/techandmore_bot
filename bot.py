@@ -21,7 +21,7 @@ PAAPI_ACCESS_KEY = os.getenv("PAAPI_ACCESS_KEY", "")
 PAAPI_SECRET_KEY = os.getenv("PAAPI_SECRET_KEY", "")
 PAAPI_HOST = os.getenv("PAAPI_HOST", "webservices.amazon.it")
 PAAPI_REGION = os.getenv("PAAPI_REGION", "eu-west-1")
-PARTNER_TAG = os.getenv("PARTNER_TAG", "techandmore05-21")
+PARTNER_TAG = os.getenv("PARTNER_TAG", "techandmor03f-21")
 PARTNER_TYPE = os.getenv("PARTNER_TYPE", "Associates")
 
 if not all([BOT_TOKEN, PAAPI_ACCESS_KEY, PAAPI_SECRET_KEY, PARTNER_TAG]):
