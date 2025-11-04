@@ -8,7 +8,7 @@
    - PAAPI_SECRET_KEY
    - PAAPI_HOST = webservices.amazon.it
    - PAAPI_REGION = eu-west-1
-   - PARTNER_TAG = techandmore05-21
+   - PARTNER_TAG = techandmor03f-21
    - PARTNER_TYPE = Associates
 
 2. Installa dipendenze:
